@@ -1,0 +1,20 @@
+parameters:
+    level: 9
+    editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+    treatPhpDocTypesAsCertain: false
+    checkGenericClassInNonGenericObjectType: false
+    parallel:
+        jobSize: 5
+        maximumNumberOfProcesses: 12
+        minimumNumberOfJobsPerProcess: 2
+    paths:
+        - bin/
+        - config/
+        - public/
+        - src/
+        - tests/
+
+includes:
+    - phpstan.dist.neon
+    - vendor/spaze/phpstan-disallowed-calls/extension.neon
+#    - vendor/phpat/phpat/extension.neon

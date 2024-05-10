@@ -1,0 +1,50 @@
+monolog:
+    channels:
+        - deprecation
+
+when@dev:
+    monolog:
+        handlers:
+            main:
+                type: stream
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                channels: ["!event"]
+            docker:
+                type: stream
+                path: "php://stderr"
+                formatter: 'monolog.formatter.json'
+                level: info
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine", "!console"]
+
+when@prod:
+    monolog:
+        handlers:
+            docker:
+                type: stream
+                path: "php://stderr"
+                formatter: 'monolog.formatter.json'
+                level: info
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine", "!console"]
+            deprecation:
+                type: stream
+                channels: [deprecation]
+                path: php://stderr
+                formatter: monolog.formatter.json
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Monolog\Processor\HostnameProcessor: ~
+    Monolog\Processor\MemoryPeakUsageProcessor: ~
+    Monolog\Processor\ProcessIdProcessor: ~
+    Monolog\Processor\UidProcessor: ~
+    Monolog\Processor\WebProcessor: ~

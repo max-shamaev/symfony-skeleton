@@ -1,0 +1,102 @@
+version: '3.9'
+
+services:
+    nginx:
+        container_name: project-nginx-local
+        build:
+            context: .
+            dockerfile: docker/local/nginx.Dockerfile
+        restart: always
+        volumes:
+            - ./:/var/www/html
+        depends_on:
+            - fpm
+        networks:
+            - default
+        ports:
+            - "8001:80"
+        healthcheck:
+            test: [ "CMD", "curl", "-s", "--fail", "http://localhost/_/healthcheck" ]
+
+    fpm:
+        container_name: project-fpm-local
+        build:
+            context: .
+            dockerfile: docker/local/fpm.Dockerfile
+            args:
+                - UID=${UID:-1000}
+                - GID=${GID:-1000}
+        user:
+            "${UID:-1000}:${GID:-1000}"
+        restart: always
+        volumes:
+            - ./:/var/www/html
+        depends_on:
+            - db
+            - wiremock
+            - redis
+        networks:
+            - default
+        healthcheck:
+            test: [ "CMD", "bin/console", "app:health-check" ]
+
+    supervisor:
+        container_name: project-supervisor-local
+        build:
+            context: .
+            dockerfile: docker/local/supervisor.Dockerfile
+        restart: always
+        volumes:
+            - ./:/var/www/html
+        depends_on:
+            - db
+            - wiremock
+            - redis
+        networks:
+            - default
+        healthcheck:
+            test: [ "CMD", "bin/console", "app:health-check" ]
+
+    db:
+        container_name: project-db-local
+        image: mariadb:11
+        environment:
+            MARIADB_DATABASE: app
+            MARIADB_ROOT_PASSWORD: pass
+            MARIADB_PASSWORD: pass
+            MARIADB_USER: user
+            MARIADB_ALLOW_EMPTY_PASSWORD: yes
+        ports:
+            - "8002:3306"
+        healthcheck:
+            test: [ "CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized" ]
+        volumes:
+            - project_database_data:/var/lib/mysql:rw
+
+    redis:
+        container_name: project-redis-local
+        build:
+            context: .
+            dockerfile: docker/local/redis.Dockerfile
+        restart: always
+        networks:
+            - default
+        healthcheck:
+            test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+
+    wiremock:
+        container_name: project-wiremock-local
+        image: wiremock/wiremock
+        restart: always
+        entrypoint: [ "/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose" ]
+        volumes:
+            - ./docker/local/wiremock:/home/wiremock
+        ports:
+            - "8003:8080"
+        networks:
+            - default
+        healthcheck:
+            test: [ "CMD", "curl", "-s", "--fail", "localhost:8080/__admin/mappings" ]
+
+volumes:
+    project_database_data:

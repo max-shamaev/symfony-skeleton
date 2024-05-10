@@ -1,0 +1,57 @@
+# Read the documentation: https://github.com/FriendsOfSymfony/FOSElasticaBundle/blob/master/doc/setup.md
+fos_elastica:
+    clients:
+        default: { url: '%env(ELASTICSEARCH_URL)%' }
+    indexes:
+        search_products:
+            properties:
+                id:
+                    type: unsigned_long
+                sku:
+                    type: keyword
+                price:
+                    type: double
+                weight:
+                    type: double
+        products:
+            properties:
+                id:
+                    type: unsigned_long
+                sku:
+                    type: keyword
+                price:
+                    type: double
+                weight:
+                    type: double
+                width:
+                    type: unsigned_long
+                height:
+                    type: unsigned_long
+                length:
+                    type: unsigned_long
+                created_at:
+                    type: date
+                updated_at:
+                    type: date
+                translations:
+                    type: object
+                    properties:
+                        en_name:
+                            type: text
+                        en_description:
+                            type: text
+                        de_name:
+                            type: text
+                        de_description:
+                            type: text
+                        fr_name:
+                            type: text
+                        fr_description:
+                            type: text
+                stocks:
+                    type: object
+                    properties:
+                        primary:
+                            type: long
+                        secondary:
+                            type: long
